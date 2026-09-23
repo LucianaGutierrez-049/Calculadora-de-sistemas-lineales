@@ -67,7 +67,7 @@
     });
 
     const first = solveWithLU(factorization.L, factorization.U, b1);
-    test("El primer vector produce X = (3, -6, 14)", () => {
+    test("El vector de ejemplo b₁ produce X = (3, -6, 14)", () => {
       assert(approximatelyEqualVector(first.x, [3, -6, 14]), `X = ${first.x}`);
     });
     test("AX = b₁", () => {
@@ -77,14 +77,49 @@
     const sameL = factorization.L;
     const sameU = factorization.U;
     const second = solveWithLU(sameL, sameU, b2);
-    test("El segundo vector reutiliza los mismos objetos L y U", () => {
+    test("Un nuevo vector reutiliza los mismos objetos L y U", () => {
       assert(sameL === factorization.L && sameU === factorization.U, "Se reemplazaron L o U");
     });
-    test("El segundo vector produce X = (4.75, -61/6, 64/3)", () => {
+    test("El vector de ejemplo b₂ produce X = (4.75, -61/6, 64/3)", () => {
       assert(approximatelyEqualVector(second.x, [4.75, -61 / 6, 64 / 3]), `X = ${second.x}`);
     });
     test("AX = b₂", () => {
       assert(approximatelyEqualVector(multiplyMatrixVector(A, second.x), b2), "AX no coincide con b₂");
+    });
+
+    const generalCases = [
+      {
+        label: "2 × 2",
+        A: [[2, 1], [4, 3]],
+        x: [3, -2]
+      },
+      {
+        label: "4 × 4",
+        A: multiplyMatrices(
+          [[1, 0, 0, 0], [2, 1, 0, 0], [-1, 3, 1, 0], [0.5, -2, 1, 1]],
+          [[4, 1, -2, 0], [0, 3, 1, 2], [0, 0, 5, -1], [0, 0, 0, 2]]
+        ),
+        x: [2, -1, 3, 0.5]
+      },
+      {
+        label: "5 × 5",
+        A: multiplyMatrices(
+          [[1, 0, 0, 0, 0], [1, 1, 0, 0, 0], [-2, 0.5, 1, 0, 0], [3, -1, 2, 1, 0], [0.25, 2, -1, 1.5, 1]],
+          [[3, 1, 0, -2, 1], [0, 4, 2, 0, -1], [0, 0, 5, 1, 2], [0, 0, 0, 2, 3], [0, 0, 0, 0, 6]]
+        ),
+        x: [1, -2, 0.5, 3, -1]
+      }
+    ];
+
+    generalCases.forEach((example) => {
+      const rightSide = multiplyMatrixVector(example.A, example.x);
+      const lu = doolittle(example.A);
+      const solved = solveWithLU(lu.L, lu.U, rightSide);
+      test(`Resuelve correctamente un sistema general ${example.label}`, () => {
+        assert(approximatelyEqualMatrix(multiplyMatrices(lu.L, lu.U), example.A), "LU no reconstruye A");
+        assert(approximatelyEqualVector(solved.x, example.x), `X = ${solved.x}`);
+        assert(approximatelyEqualVector(multiplyMatrixVector(example.A, solved.x), rightSide), "AX no coincide con b");
+      });
     });
     test("El formateador elimina el cero negativo", () => {
       assert(formatNumber(-1e-13) === "0", "Se mostró un cero negativo");

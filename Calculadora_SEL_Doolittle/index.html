@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Dashboard educativo para resolver sistemas lineales mediante factorización LU de Doolittle.">
   <title>Numérica · Dashboard Doolittle</title>
-  <link rel="icon" href="data:,">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230b1f44'/%3E%3Cpath d='M43 16H20l14 16-14 16h23' fill='none' stroke='%23ffc857' stroke-width='7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
@@ -49,8 +49,8 @@
       <header class="dashboard-header">
         <div>
           <div class="breadcrumb"><span>Métodos Numéricos</span><b>/</b><span>Sesión 6</span></div>
-          <h1>Calculadora de sistemas lineales</h1>
-          <p>Factorización LU con el procedimiento de Doolittle, explicado paso a paso.</p>
+          <h1>Calculadora LU de Doolittle</h1>
+          <p>Resuelve sistemas de examen de orden 2 × 2 a 5 × 5 compatibles con Doolittle sin pivoteo.</p>
         </div>
         <div class="header-actions">
           <span class="live-badge"><i></i> Espacio listo</span>
@@ -65,19 +65,25 @@
         <article class="metric-card"><div class="metric-icon violet">#</div><div><span>Operaciones LU</span><strong id="factorization-count" data-testid="factorization-count">0</strong><small>factorizaciones</small></div></article>
       </section>
 
+      <section class="exam-guide" aria-label="Flujo de resolución para examen">
+        <article class="exam-step"><span>01</span><div><strong>Ingresa el sistema</strong><small>Escribe cualquier matriz A y su vector b.</small></div></article>
+        <article class="exam-step"><span>02</span><div><strong>Aplica Doolittle</strong><small>Obtén L, U, Y y X paso a paso.</small></div></article>
+        <article class="exam-step"><span>03</span><div><strong>Comprueba</strong><small>Verifica automáticamente LU = A y AX = b.</small></div></article>
+      </section>
+
       <section class="workspace-grid" id="calculator">
         <article class="calculator-card panel-card">
           <div class="panel-heading">
-            <div><span class="section-label">Entrada del sistema</span><h2>Construye tu matriz</h2></div>
+            <div><span class="section-label">Modo examen</span><h2>Resuelve tu sistema AX = b</h2></div>
             <label class="order-control" for="system-order"><span>Orden</span><select id="system-order" data-testid="system-order"><option value="2">2 × 2</option><option value="3" selected>3 × 3</option><option value="4">4 × 4</option><option value="5">5 × 5</option></select></label>
           </div>
 
           <div class="formula-ribbon" aria-label="Flujo del método"><span>A = LU</span><b>→</b><span>LY = b</span><b>→</b><span>UX = Y</span></div>
 
-          <div class="exercise-presets" aria-label="Ejercicios de la tarea">
-            <div class="preset-copy"><span>Ejercicios de la guía</span><small>La misma matriz A con dos vectores independientes</small></div>
-            <button id="load-example" class="exercise-button" type="button" data-testid="load-example"><span>Ejercicio 1</span><strong>b₁ = (14, 46, 26)ᵀ</strong></button>
-            <button id="load-second" class="exercise-button" type="button" data-testid="load-second"><span>Ejercicio 2</span><strong>b₂ = (20, 62, 30)ᵀ</strong></button>
+          <div class="exercise-presets" aria-label="Ejemplo opcional de práctica">
+            <div class="preset-copy"><span>Ejemplo opcional</span><small>Úsalo para practicar o reemplaza todos los valores con los de tu examen.</small></div>
+            <button id="load-example" class="exercise-button" type="button" data-testid="load-example"><span>Cargar ejemplo</span><strong>b = (14, 46, 26)ᵀ</strong></button>
+            <button id="load-second" class="exercise-button" type="button" data-testid="load-second"><span>Probar reutilización de LU</span><strong>Nuevo b = (20, 62, 30)ᵀ</strong></button>
           </div>
 
           <div class="input-equation" aria-label="Entrada matricial A por X igual a b">
@@ -96,12 +102,12 @@
             <button id="new-vector" class="button button-soft" type="button" data-testid="new-vector">Nuevo vector b</button>
             <button id="clear" class="button button-text" type="button" data-testid="clear">Limpiar</button>
           </div>
-          <div id="status" class="status status-neutral" role="status" aria-live="polite">Ingresa los coeficientes o carga el ejemplo de la actividad.</div>
+          <div id="status" class="status status-neutral" role="status" aria-live="polite">Ingresa los coeficientes de tu sistema o carga el ejemplo de práctica.</div>
         </article>
 
         <section class="quick-result-card" aria-labelledby="quick-result-title">
           <div class="result-glow" aria-hidden="true"></div>
-          <div class="quick-result-heading"><div><span class="section-label light">Resumen completo</span><h2 id="quick-result-title">Resultados del sistema</h2></div><span class="result-chip">LU</span></div>
+          <div class="quick-result-heading"><div><span class="section-label light">Respuesta inmediata</span><h2 id="quick-result-title">Resultado del sistema</h2></div><span class="result-chip">LU</span></div>
           <div id="quick-result" class="quick-result" data-testid="quick-result">
             <div class="empty-result-art" aria-hidden="true"><span>[</span><div><i></i><i></i><i></i><i></i></div><span>]</span></div>
             <h3>Aún no hay resultados</h3>
@@ -112,7 +118,7 @@
       </section>
 
       <section id="results" class="results panel-card" aria-labelledby="results-title" hidden>
-        <div class="results-header"><div><span class="section-label">Cuaderno de resolución</span><h2 id="results-title">Desarrollo analítico</h2><p>El origen de cada número, desde la factorización hasta la comprobación final.</p></div><div class="results-badge"><span>7</span> etapas verificadas</div></div>
+        <div class="results-header"><div><span id="results-phase-label" class="section-label">Procedimiento completo</span><h2 id="results-title">Resolución paso a paso</h2><p id="results-description">Descomposición A = LU, sustituciones sucesivas y comprobaciones del sistema ingresado.</p></div><div class="results-badge"><span>7</span> etapas verificadas</div></div>
         <div id="result-content"></div>
       </section>
 

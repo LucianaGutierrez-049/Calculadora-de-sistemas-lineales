@@ -49,10 +49,20 @@ function matrixSignature(A) {
   return JSON.stringify(A);
 }
 
-function setActiveExercise(number = null) {
+function setActivePreset(number = null) {
   document.querySelectorAll(".exercise-button").forEach((button) => {
     button.classList.toggle("is-active", button.id === (number === 1 ? "load-example" : number === 2 ? "load-second" : ""));
   });
+}
+
+function vectorsMatch(left, right) {
+  return left.length === right.length && left.every((value, index) => Math.abs(value - right[index]) < 1e-9);
+}
+
+function presetForVector(b) {
+  if (vectorsMatch(b, TASK.b1)) return 1;
+  if (vectorsMatch(b, TASK.b2)) return 2;
+  return null;
 }
 
 function invalidateFactorization(message = "La matriz A cambió: la factorización anterior fue invalidada.") {
@@ -88,7 +98,7 @@ function handleError(error) {
 }
 
 refs.order.addEventListener("change", () => {
-  setActiveExercise();
+  setActivePreset();
   setMatrixLocked(false);
   state.matrixLocked = false;
   invalidateFactorization("Cambió el orden del sistema: ingresa una nueva matriz A.");
@@ -97,25 +107,27 @@ refs.order.addEventListener("change", () => {
 
 refs.matrixInputs.addEventListener("input", (event) => {
   if (event.target.matches("[data-matrix='A']")) {
-    setActiveExercise();
+    setActivePreset();
     invalidateFactorization();
   }
   updateEquationPreview();
 });
 
 refs.vectorInputs.addEventListener("input", () => {
-  setActiveExercise();
+  setActivePreset();
   updateEquationPreview();
 });
 
 buttons.load.addEventListener("click", () => {
   state.cache = null;
+  state.factorizationCount = 0;
+  updateCounter(0);
   state.matrixLocked = false;
   setMatrixLocked(false);
   fillData(TASK.A, TASK.b1);
-  setActiveExercise(1);
+  setActivePreset(1);
   hideResults();
-  showStatus("Ejemplo de la guía autónoma cargado. Puedes factorizar A o resolver el sistema completo.", "success");
+  showStatus("Ejemplo cargado. Puedes cambiar cualquier valor de A o b antes de resolver.", "success");
 });
 
 buttons.loadSecond.addEventListener("click", () => {
@@ -137,20 +149,21 @@ buttons.loadSecond.addEventListener("click", () => {
     } else {
       state.matrixLocked = false;
       setMatrixLocked(false);
-      fillData(TASK.A, TASK.b2);
+      fillData(TASK.A, TASK.b1);
       ({ A, factorization } = factorizeCurrentMatrix());
+      fillVector(TASK.b2);
     }
 
     state.matrixLocked = true;
     setMatrixLocked(true);
-    setActiveExercise(2);
+    setActivePreset(2);
     const luProduct = multiplyMatrices(factorization.L, factorization.U);
     const luCorrect = approximatelyEqualMatrix(luProduct, A);
     renderFactorization(A, factorization, luProduct, luCorrect);
     showStatus(
       canReuse
-        ? "Ejercicio 2 cargado. Se conservaron las matrices L y U del ejercicio 1; pulsa Resolver sistema."
-        : "Ejercicio 2 cargado. La matriz A se factorizó una sola vez y quedó preparada para resolver b₂.",
+        ? "Nuevo vector b cargado. Se conservaron L y U; solo faltan las sustituciones LY = b y UX = Y."
+        : "Ejemplo de reutilización preparado: A se factorizó una vez y L y U quedan guardadas para el nuevo vector b.",
       "success"
     );
   } catch (error) {
@@ -180,11 +193,12 @@ buttons.solve.addEventListener("click", () => {
     const axProduct = multiplyMatrixVector(A, solution.x);
     const luCorrect = approximatelyEqualMatrix(luProduct, A);
     const axCorrect = approximatelyEqualVector(axProduct, b);
+    setActivePreset(presetForVector(b));
     renderSolution({ A, b, factorization, solution, luProduct, axProduct, luCorrect, axCorrect, reused });
     showStatus(
       reused
-        ? "Se están reutilizando las matrices L y U previamente calculadas. No es necesario volver a factorizar A."
-        : "Sistema resuelto correctamente: se calculó LU y se realizaron ambas sustituciones.",
+        ? "Sistema resuelto reutilizando L y U. No se volvió a calcular la factorización de A."
+        : "Sistema resuelto correctamente: se calculó A = LU, luego LY = b y UX = Y.",
       "success"
     );
   } catch (error) {
@@ -194,7 +208,7 @@ buttons.solve.addEventListener("click", () => {
 
 buttons.newVector.addEventListener("click", () => {
   try {
-    setActiveExercise();
+    setActivePreset();
     if (state.matrixLocked) {
       state.matrixLocked = false;
       setMatrixLocked(false);
@@ -219,7 +233,7 @@ buttons.newVector.addEventListener("click", () => {
 });
 
 buttons.clear.addEventListener("click", () => {
-  setActiveExercise();
+  setActivePreset();
   state.cache = null;
   state.matrixLocked = false;
   state.factorizationCount = 0;

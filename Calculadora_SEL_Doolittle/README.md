@@ -2,7 +2,7 @@
 
 Aplicación web educativa para factorizar matrices cuadradas y resolver sistemas `AX = b` mediante el método LU de Doolittle. Está desarrollada únicamente con HTML5, CSS3 y JavaScript vanilla.
 
-## Fundamento y actividad
+## Fundamento del método
 
 La guía teórica de la Sesión 6 define la factorización `A = LU`, con `L` triangular inferior y diagonal unitaria, y `U` triangular superior. El sistema se resuelve en dos etapas:
 
@@ -24,7 +24,7 @@ La guía de aprendizaje autónomo aplica el método al balanceo de carga de tres
 - Detección de campos vacíos, valores no finitos y pivotes cero o casi cero.
 - Caché de la factorización mientras la matriz `A` no cambie.
 - El botón **Nuevo vector b** bloquea temporalmente `A`, limpia `b` y permite resolver otro sistema reutilizando `L` y `U`.
-- Los botones **Ejercicio 1** y **Ejercicio 2** cargan directamente `b₁` y `b₂`; al pasar del primero al segundo se conservan las matrices `L` y `U`.
+- Incluye un ejemplo opcional con dos vectores para practicar la reutilización de `L` y `U`; la calculadora también acepta cualquier sistema compatible de orden 2 a 5.
 - Contador visible de factorizaciones para comprobar la reutilización.
 
 ## Estructura
@@ -54,7 +54,7 @@ La separación entre el núcleo matemático, la interfaz y el controlador permit
 
 No se requieren dependencias, instalación con npm ni proceso de compilación. Al usar módulos JavaScript, se recomienda un servidor local como Live Server en lugar de abrir el archivo directamente con `file://`.
 
-## Caso de la actividad
+## Ejemplo incluido
 
 ```text
 A = [  4   2   1 ]    b₁ = [14]    b₂ = [20]

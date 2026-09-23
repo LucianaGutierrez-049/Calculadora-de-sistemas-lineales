@@ -13,6 +13,9 @@ const refs = {
   quickResult: document.querySelector("#quick-result"),
   results: document.querySelector("#results"),
   resultContent: document.querySelector("#result-content"),
+  resultsPhaseLabel: document.querySelector("#results-phase-label"),
+  resultsTitle: document.querySelector("#results-title"),
+  resultsDescription: document.querySelector("#results-description"),
   newVectorButton: document.querySelector("#new-vector")
 };
 
@@ -191,11 +194,19 @@ function renderQuickFactorization(factorization, luCorrect) {
     <a class="quick-detail-link" href="#results">Ver desarrollo completo <span>↓</span></a>`;
 }
 
+function setResultsHeading(reused = false) {
+  refs.resultsPhaseLabel.textContent = reused ? "LU guardada en memoria" : "Procedimiento completo";
+  refs.resultsTitle.textContent = reused ? "Resolución con L y U reutilizadas" : "Resolución paso a paso";
+  refs.resultsDescription.textContent = reused
+    ? "La matriz A no cambió: se conservan L y U y solo se repiten LY = b y UX = Y."
+    : "Descomposición A = LU, sustituciones sucesivas y comprobaciones del sistema ingresado.";
+}
+
 function renderQuickSolution(factorization, solution, luCorrect, axCorrect, reused) {
   refs.matrixState.textContent = reused ? "LU reutilizada" : "Sistema resuelto";
   refs.quickResult.innerHTML = `
-    <div class="quick-solution-title">Vector solución</div>
-    <div class="quick-solution-caption">${reused ? "Calculado reutilizando L y U." : "Calculado mediante dos sustituciones."}</div>
+    <div class="quick-solution-title">Vector solución X</div>
+    <div class="quick-solution-caption">${reused ? "L y U reutilizadas: no se recalculó la factorización." : "A = LU calculada y sistema resuelto mediante dos sustituciones."}</div>
     <div class="quick-matrix-row solution-row">
       ${quickMatrixMarkup(solution.x.map((value) => [value]), "X", true)}
       ${quickMatrixMarkup(solution.y.map((value) => [value]), "Y")}
@@ -252,6 +263,7 @@ function equationsMarkup(A, b) {
 
 export function renderFactorization(A, factorization, luProduct, luCorrect) {
   refs.results.hidden = false;
+  setResultsHeading(false);
   renderQuickFactorization(factorization, luCorrect);
   refs.resultContent.innerHTML =
     sectionMarkup("1", "Datos ingresados", "La matriz cuadrada que se factorizará.", `<div class="math-row">${matrixMarkup(A, "Matriz A")}</div>`) +
@@ -263,19 +275,23 @@ export function renderFactorization(A, factorization, luProduct, luCorrect) {
 
 export function renderSolution({ A, b, factorization, solution, luProduct, axProduct, luCorrect, axCorrect, reused }) {
   refs.results.hidden = false;
+  setResultsHeading(reused);
   renderQuickSolution(factorization, solution, luCorrect, axCorrect, reused);
+  const factorTitle = reused ? "Reutilización de las matrices L y U" : "Descomposición A = LU: cálculo paso a paso";
+  const factorBody = reused
+    ? '<div class="reuse-note"><strong>L y U están siendo reutilizadas.</strong> Como A no cambió, la factorización permanece en memoria y no se vuelve a calcular.</div>'
+    : `<div class="matrix-pair">${matrixMarkup(identity(A.length), "L inicial")}${matrixMarkup(zeros(A.length), "U inicial")}</div><div class="step-list">${factorization.steps.map(factorStepMarkup).join("")}</div>`;
   refs.resultContent.innerHTML =
-    sectionMarkup("1", "Datos ingresados", "El sistema se representa en la forma matricial AX = b.",
+    sectionMarkup("1", "Sistema ingresado", "La matriz A y el vector b definen el sistema AX = b que deseas resolver.",
       `<div class="step-list">${equationsMarkup(A, b)}</div><div class="math-row">${matrixMarkup(A, "Matriz A")}${vectorMarkup(b, "Vector b")}</div>`) +
-    sectionMarkup("2", "Factorización Doolittle", "Se usa la formulación indicada en la guía teórica: L comienza como identidad y U como matriz nula.",
-      `${reused ? '<div class="reuse-note">Se están reutilizando las matrices L y U previamente calculadas. No es necesario volver a factorizar A.</div>' : `<div class="matrix-pair">${matrixMarkup(identity(A.length), "L inicial")}${matrixMarkup(zeros(A.length), "U inicial")}</div><div class="step-list">${factorization.steps.map(factorStepMarkup).join("")}</div>`}`) +
+    sectionMarkup("2", factorTitle, reused ? "Doolittle no se ejecuta otra vez porque la matriz A es exactamente la misma." : "Doolittle inicia L como identidad y U como matriz nula; cada elemento se obtiene con la fórmula correspondiente.", factorBody) +
     sectionMarkup("3", "Matrices L y U", "El producto de las matrices reconstruye la matriz original.",
       `<div class="matrix-pair">${matrixMarkup(factorization.L, "Matriz L")}${matrixMarkup(factorization.U, "Matriz U")}</div>`) +
-    sectionMarkup("4", "Sustitución hacia adelante", "Se resuelve LY = b desde la primera ecuación hasta la última.",
+    sectionMarkup("4", "Resolver LY = b", "Sustitución hacia adelante para obtener Y a partir del vector b.",
       `<div class="step-list">${solution.forwardSteps.map((step) => substitutionStepMarkup(step, "forward")).join("")}</div>${vectorMarkup(solution.y, "Vector Y")}`) +
-    sectionMarkup("5", "Sustitución hacia atrás", "Se resuelve UX = Y desde la última ecuación hasta la primera.",
+    sectionMarkup("5", "Resolver UX = Y", "Sustitución hacia atrás para obtener X a partir del vector Y.",
       `<div class="step-list">${solution.backwardSteps.map((step) => substitutionStepMarkup(step, "backward")).join("")}</div>`) +
-    sectionMarkup("6", "Solución", "El vector X contiene el valor de cada incógnita.",
+    sectionMarkup("6", "Solución final", "El vector X contiene el valor de cada incógnita.",
       `<div class="solution-grid"><div class="solution-card">${vectorMarkup(solution.x, "Vector solución X")}</div></div>`) +
     sectionMarkup("7", "Comprobación", "Se verifican numéricamente tanto la factorización como la solución obtenida.",
       `<div class="verification-grid"><div class="verification-card"><div class="math-card-title">L · U frente a A</div><div class="matrix-pair">${matrixMarkup(luProduct, "Producto LU")}${matrixMarkup(A, "Matriz A")}</div><div class="verification-status ${luCorrect ? "" : "fail"}">Verificación LU = A: ${luCorrect ? "Correcta" : "No coincide"}</div></div><div class="verification-card"><div class="math-card-title">A · X frente a b</div><div class="matrix-pair">${vectorMarkup(axProduct, "Producto AX")}${vectorMarkup(b, "Vector b")}</div><div class="verification-status ${axCorrect ? "" : "fail"}">Verificación AX = b: ${axCorrect ? "Correcta" : "No coincide"}</div></div></div>`);
