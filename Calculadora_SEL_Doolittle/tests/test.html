@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pruebas · Doolittle</title>
+  <link rel="icon" href="data:,">
+  <style>
+    body { margin: 0; padding: 32px; color: #152440; background: #f4f7fb; font: 16px/1.5 system-ui, sans-serif; }
+    main { max-width: 820px; margin: auto; padding: 28px; border-radius: 14px; background: white; box-shadow: 0 12px 40px #18335b15; }
+    h1 { margin-top: 0; }
+    #summary { padding: 12px 15px; border-radius: 8px; font-weight: 800; }
+    .pass { color: #116b4c; background: #e8f7f0; }
+    .fail { color: #a52f2f; background: #fff0f0; }
+    li { margin: 8px 0; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Pruebas automáticas</h1>
+    <p id="summary">Ejecutando…</p>
+    <ol id="results"></ol>
+  </main>
+  <script type="module">
+    import {
+      doolittle, solveWithLU, multiplyMatrices, multiplyMatrixVector,
+      approximatelyEqualMatrix, approximatelyEqualVector, formatNumber
+    } from "../js/doolittle.js";
+
+    const output = document.querySelector("#results");
+    const summary = document.querySelector("#summary");
+    let passed = 0;
+    let failed = 0;
+
+    function test(name, fn) {
+      const item = document.createElement("li");
+      try {
+        fn();
+        passed += 1;
+        item.textContent = `✓ ${name}`;
+        item.style.color = "#116b4c";
+      } catch (error) {
+        failed += 1;
+        item.textContent = `✗ ${name}: ${error.message}`;
+        item.style.color = "#a52f2f";
+      }
+      output.append(item);
+    }
+
+    function assert(condition, message) {
+      if (!condition) throw new Error(message);
+    }
+
+    const A = [[4, 2, 1], [12, 10, 5], [-8, 8, 7]];
+    const b1 = [14, 46, 26];
+    const b2 = [20, 62, 30];
+    const factorization = doolittle(A);
+
+    test("Doolittle obtiene la matriz L esperada", () => {
+      assert(approximatelyEqualMatrix(factorization.L, [[1, 0, 0], [3, 1, 0], [-2, 3, 1]]), "L no coincide");
+    });
+    test("Doolittle obtiene la matriz U esperada", () => {
+      assert(approximatelyEqualMatrix(factorization.U, [[4, 2, 1], [0, 4, 2], [0, 0, 3]]), "U no coincide");
+    });
+    test("El producto LU reconstruye A", () => {
+      assert(approximatelyEqualMatrix(multiplyMatrices(factorization.L, factorization.U), A), "LU no reconstruye A");
+    });
+
+    const first = solveWithLU(factorization.L, factorization.U, b1);
+    test("El primer vector produce X = (3, -6, 14)", () => {
+      assert(approximatelyEqualVector(first.x, [3, -6, 14]), `X = ${first.x}`);
+    });
+    test("AX = b₁", () => {
+      assert(approximatelyEqualVector(multiplyMatrixVector(A, first.x), b1), "AX no coincide con b₁");
+    });
+
+    const sameL = factorization.L;
+    const sameU = factorization.U;
+    const second = solveWithLU(sameL, sameU, b2);
+    test("El segundo vector reutiliza los mismos objetos L y U", () => {
+      assert(sameL === factorization.L && sameU === factorization.U, "Se reemplazaron L o U");
+    });
+    test("El segundo vector produce X = (4.75, -61/6, 64/3)", () => {
+      assert(approximatelyEqualVector(second.x, [4.75, -61 / 6, 64 / 3]), `X = ${second.x}`);
+    });
+    test("AX = b₂", () => {
+      assert(approximatelyEqualVector(multiplyMatrixVector(A, second.x), b2), "AX no coincide con b₂");
+    });
+    test("El formateador elimina el cero negativo", () => {
+      assert(formatNumber(-1e-13) === "0", "Se mostró un cero negativo");
+    });
+    test("Un pivote cero se informa sin cambiar de método", () => {
+      let detected = false;
+      try { doolittle([[0, 1], [1, 1]]); } catch (error) { detected = error.code === "ZERO_PIVOT"; }
+      assert(detected, "No se detectó el pivote cero");
+    });
+
+    summary.textContent = failed === 0 ? `${passed} pruebas superadas · 0 errores` : `${passed} superadas · ${failed} errores`;
+    summary.className = failed === 0 ? "pass" : "fail";
+    document.documentElement.dataset.testStatus = failed === 0 ? "passed" : "failed";
+  </script>
+</body>
+</html>

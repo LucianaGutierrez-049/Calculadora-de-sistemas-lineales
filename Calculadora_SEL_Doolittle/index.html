@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Dashboard educativo para resolver sistemas lineales mediante factorización LU de Doolittle.">
+  <title>Numérica · Dashboard Doolittle</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Navegación principal">
+      <a class="sidebar-brand" href="#dashboard" aria-label="Ir al panel principal">
+        <span class="brand-symbol" aria-hidden="true">∑</span>
+        <span class="brand-copy"><strong>Numérica</strong><small>Lab académico</small></span>
+      </a>
+
+      <nav class="sidebar-nav">
+        <span class="nav-caption">Espacio de trabajo</span>
+        <a class="nav-link active" href="#dashboard">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 13h6V4H4v9Zm0 7h6v-5H4v5Zm10 0h6v-9h-6v9Zm0-16v5h6V4h-6Z"/></svg>
+          <span>Panel principal</span>
+        </a>
+        <a class="nav-link" href="#calculator">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2h10a3 3 0 0 1 3 3v14a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3V5a3 3 0 0 1 3-3Zm0 4v4h10V6H7Zm1 8a1 1 0 1 0 0-2 1 1 0 0 0 0 2Zm4 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2Zm4 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2Zm-8 4a1 1 0 1 0 0-2 1 1 0 0 0 0 2Zm4 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2Zm4 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z"/></svg>
+          <span>Calculadora</span>
+        </a>
+        <a class="nav-link" href="#results">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Zm2 12v3h2v-3H7Zm4-5v8h2v-8h-2Zm4-4v12h2V6h-2Z"/></svg>
+          <span>Procedimiento</span>
+        </a>
+      </nav>
+
+      <div class="method-mini-card">
+        <div class="method-mini-icon">LU</div>
+        <div><small>Método activo</small><strong>Doolittle</strong></div>
+        <span class="pulse-dot" aria-label="Disponible"></span>
+      </div>
+
+      <div class="sidebar-profile">
+        <div class="avatar">LG</div>
+        <div class="profile-copy"><strong>Luciana Gutierrez</strong><small>Estudiante</small></div>
+        <span class="profile-more" aria-hidden="true">•••</span>
+      </div>
+    </aside>
+
+    <main class="main-content" id="dashboard">
+      <header class="dashboard-header">
+        <div>
+          <div class="breadcrumb"><span>Métodos Numéricos</span><b>/</b><span>Sesión 6</span></div>
+          <h1>Calculadora de sistemas lineales</h1>
+          <p>Factorización LU con el procedimiento de Doolittle, explicado paso a paso.</p>
+        </div>
+        <div class="header-actions">
+          <span class="live-badge"><i></i> Espacio listo</span>
+          <div class="header-avatar">LG</div>
+        </div>
+      </header>
+
+      <section class="metric-grid" aria-label="Resumen del método">
+        <article class="metric-card metric-featured"><div class="metric-icon">A</div><div><span>Método numérico</span><strong>Doolittle</strong><small>A = LU</small></div></article>
+        <article class="metric-card"><div class="metric-icon cyan">n</div><div><span>Orden actual</span><strong id="current-order">3 × 3</strong><small>matriz cuadrada</small></div></article>
+        <article class="metric-card"><div class="metric-icon amber">✓</div><div><span>Estado de LU</span><strong id="matrix-state">Sin factorizar</strong><small>memoria de cálculo</small></div></article>
+        <article class="metric-card"><div class="metric-icon violet">#</div><div><span>Operaciones LU</span><strong id="factorization-count" data-testid="factorization-count">0</strong><small>factorizaciones</small></div></article>
+      </section>
+
+      <section class="workspace-grid" id="calculator">
+        <article class="calculator-card panel-card">
+          <div class="panel-heading">
+            <div><span class="section-label">Entrada del sistema</span><h2>Construye tu matriz</h2></div>
+            <label class="order-control" for="system-order"><span>Orden</span><select id="system-order" data-testid="system-order"><option value="2">2 × 2</option><option value="3" selected>3 × 3</option><option value="4">4 × 4</option><option value="5">5 × 5</option></select></label>
+          </div>
+
+          <div class="formula-ribbon" aria-label="Flujo del método"><span>A = LU</span><b>→</b><span>LY = b</span><b>→</b><span>UX = Y</span></div>
+
+          <div class="exercise-presets" aria-label="Ejercicios de la tarea">
+            <div class="preset-copy"><span>Ejercicios de la guía</span><small>La misma matriz A con dos vectores independientes</small></div>
+            <button id="load-example" class="exercise-button" type="button" data-testid="load-example"><span>Ejercicio 1</span><strong>b₁ = (14, 46, 26)ᵀ</strong></button>
+            <button id="load-second" class="exercise-button" type="button" data-testid="load-second"><span>Ejercicio 2</span><strong>b₂ = (20, 62, 30)ᵀ</strong></button>
+          </div>
+
+          <div class="input-equation" aria-label="Entrada matricial A por X igual a b">
+            <div class="input-block"><span class="math-label">A</span><div id="matrix-inputs" class="matrix-inputs" data-testid="matrix-inputs"></div></div>
+            <span class="equation-symbol">×</span>
+            <div class="symbolic-vector" aria-label="Vector de incógnitas X"><span class="math-label">X</span><div id="unknown-vector" class="unknown-vector"></div></div>
+            <span class="equation-symbol">=</span>
+            <div class="input-block"><span class="math-label">b</span><div id="vector-inputs" class="vector-inputs" data-testid="vector-inputs"></div></div>
+          </div>
+
+          <details class="equation-details"><summary>Ver sistema de ecuaciones generado</summary><div id="equation-preview" class="equation-preview" aria-live="polite"></div></details>
+
+          <div class="actions" aria-label="Acciones de la calculadora">
+            <button id="factorize" class="button button-secondary" type="button" data-testid="factorize">Factorizar A</button>
+            <button id="solve" class="button button-primary" type="button" data-testid="solve">Resolver sistema <span>→</span></button>
+            <button id="new-vector" class="button button-soft" type="button" data-testid="new-vector">Nuevo vector b</button>
+            <button id="clear" class="button button-text" type="button" data-testid="clear">Limpiar</button>
+          </div>
+          <div id="status" class="status status-neutral" role="status" aria-live="polite">Ingresa los coeficientes o carga el ejemplo de la actividad.</div>
+        </article>
+
+        <section class="quick-result-card" aria-labelledby="quick-result-title">
+          <div class="result-glow" aria-hidden="true"></div>
+          <div class="quick-result-heading"><div><span class="section-label light">Resumen completo</span><h2 id="quick-result-title">Resultados del sistema</h2></div><span class="result-chip">LU</span></div>
+          <div id="quick-result" class="quick-result" data-testid="quick-result">
+            <div class="empty-result-art" aria-hidden="true"><span>[</span><div><i></i><i></i><i></i><i></i></div><span>]</span></div>
+            <h3>Aún no hay resultados</h3>
+            <p>Completa la matriz y pulsa <strong>Resolver sistema</strong>. Aquí aparecerá la solución sin que pierdas de vista tus datos.</p>
+          </div>
+          <div class="quick-footer"><span>Precisión interna completa</span><span>≈ 6 decimales</span></div>
+        </section>
+      </section>
+
+      <section id="results" class="results panel-card" aria-labelledby="results-title" hidden>
+        <div class="results-header"><div><span class="section-label">Cuaderno de resolución</span><h2 id="results-title">Desarrollo analítico</h2><p>El origen de cada número, desde la factorización hasta la comprobación final.</p></div><div class="results-badge"><span>7</span> etapas verificadas</div></div>
+        <div id="result-content"></div>
+      </section>
+
+      <section class="future-card"><div class="future-mark">+</div><div><span class="section-label">Próxima expansión</span><h2>Una base preparada para más métodos</h2><p>Gauss, Gauss-Jordan, Cramer y sistemas homogéneos pueden añadirse sin alterar el motor actual.</p></div><div class="future-tags"><span>Gauss</span><span>Gauss–Jordan</span><span>Cramer</span></div></section>
+      <footer class="dashboard-footer"><span>Numérica · Laboratorio de Métodos Numéricos</span><span>Diseñado para estudiar, calcular y comprobar.</span></footer>
+    </main>
+  </div>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
